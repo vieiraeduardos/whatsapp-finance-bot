@@ -20,7 +20,7 @@ client.on("message", msg => {
         const args = msg.body.split(" ");
 
         if (args.length < 4) {
-            msg.reply("Uso: /gasto <preço> <categoria> <descrição>");
+            msg.reply("Uso: /gasto <valor> <categoria> <descrição>");
             return;
         }
 
@@ -31,15 +31,45 @@ client.on("message", msg => {
                 user_id: msg.from,
                 description: args.slice(3).join(" "),
                 category: args[2],
-                price: parseFloat(args[1]),
+                value: parseFloat(args[1]),
                 created_at: new Date().toISOString()
             }
         ).then(() => {
             console.log("Despense inserted successfully.");
             msg.reply("Gasto registrado com sucesso!");
+            return;
         }).catch(err => {
             console.error("Error inserting despense: ", err);
             msg.reply("Erro ao registrar gasto. Tente novamente mais tarde!");
+            return;
+        });
+    }
+
+    if (msg.body.startsWith("/receita")) {
+        const args = msg.body.split(" ");
+
+        if (args.length < 3) {
+            msg.reply("Uso: /receita <valor> <descrição>");
+            return;
+        }
+
+        const client = new SQLiteClient();
+
+        client.insert_revenue(
+            {
+                user_id: msg.from,
+                description: args.slice(2).join(" "),
+                value: parseFloat(args[1]),
+                created_at: new Date().toISOString()
+            }
+        ).then(() => {
+            console.log("Revenue inserted successfully.");
+            msg.reply("Receita registrada com sucesso!");
+            return;
+        }).catch(err => {
+            console.error("Error inserting revenue: ", err);
+            msg.reply("Erro ao registrar receita. Tente novamente mais tarde!");
+            return;
         });
     }
 });
