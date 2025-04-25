@@ -72,6 +72,31 @@ client.on("message", msg => {
             return;
         });
     }
+
+    if (msg.body.startsWith("/relatorio")) {
+        const args = msg.body.split(" ");
+
+        if (args.length < 2) {
+            msg.reply("Uso: /relatorio");
+            return;
+        }
+
+        const client = new SQLiteClient();
+
+        client.get_report(
+            {
+                user_id: msg.from,
+            }
+        ).then((report) => {
+            console.log("Report retrieved successfully.");
+            msg.reply(`Relatório: ${JSON.stringify(report)}`);
+            return;
+        }).catch(err => {
+            console.error("Error retrieving report: ", err);
+            msg.reply("Erro ao gerar relatório. Tente novamente mais tarde!");
+            return;
+        });
+    }
 });
 
 client.initialize();

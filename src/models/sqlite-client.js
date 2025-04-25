@@ -71,8 +71,37 @@ export default class SQLiteClient {
 
     async insert_revenue(revenue) {
         const db = await this.open_db();
-        const sql = `INSERT INTO revenues (user_id, description, value, created_at) VALUES (?, ?, ?, ?)`;
+        const sql = `INSERT INTO revenues (user_id, description, value, created_at) VALUES (?, ?, ?, ?)`; 
         await this.run(sql, [revenue.user_id, revenue.description, revenue.value, revenue.created_at]);
         this.close_db();
+    }
+
+    async get_report(user_id) {
+        const db = await this.open_db();
+
+        const sql = `
+            SELECT 
+                d.category, 
+                SUM(d.value) AS total_despenses, 
+                SUM(r.value) AS total_revenues
+            FROM despenses d
+            LEFT JOIN revenues r 
+                ON d.user_id = r.user_id 
+                AND r.created_at >= date('now', '-1 month')
+            WHERE d.user_id = ? 
+              AND d.created_at >= date('now', '-1 month')
+            GROUP BY d.category
+        `;
+        return new Promise((resolve, reject) => {
+            db.all(sql, [user_id], (err, rows) => {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows);
+                }
+            });
+        }).finally(() => {
+            this.close_db();
+        });
     }
 }
