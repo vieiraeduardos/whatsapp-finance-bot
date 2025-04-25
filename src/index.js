@@ -76,7 +76,7 @@ client.on("message", msg => {
     if (msg.body.startsWith("/relatorio")) {
         const args = msg.body.split(" ");
 
-        if (args.length < 2) {
+        if (args.length < 1) {
             msg.reply("Uso: /relatorio");
             return;
         }
@@ -94,6 +94,34 @@ client.on("message", msg => {
         }).catch(err => {
             console.error("Error retrieving report: ", err);
             msg.reply("Erro ao gerar relatório. Tente novamente mais tarde!");
+            return;
+        });
+    }
+
+    if (msg.body.startsWith("/orcamento")) {
+        const args = msg.body.split(" ");
+
+        if (args.length < 3) {
+            msg.reply("Uso: /orcamento <categoria> <valor>");
+            return;
+        }
+
+        const client = new SQLiteClient();
+
+        client.set_budget(
+            {
+                user_id: msg.from,
+                category: args[1],
+                value: parseFloat(args[2]),
+                created_at: new Date().toISOString()
+            }
+        ).then(() => {
+            console.log("Budget inserted successfully.");
+            msg.reply("Orçamento registrado com sucesso!");
+            return;
+        }).catch(err => {
+            console.error("Error inserting budget: ", err);
+            msg.reply("Erro ao registrar orçamento. Tente novamente mais tarde!");
             return;
         });
     }

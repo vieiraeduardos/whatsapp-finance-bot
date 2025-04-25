@@ -35,6 +35,16 @@ export default class SQLiteClient {
                     created_at TEXT NOT NULL
                 )
             `);
+
+            await this.run(`
+                CREATE TABLE IF NOT EXISTS budgets (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    category TEXT NOT NULL,
+                    value REAL NOT NULL,
+                    created_at TEXT NOT NULL
+                )
+            `);
         }
         return this.db;
     }
@@ -103,5 +113,12 @@ export default class SQLiteClient {
         }).finally(() => {
             this.close_db();
         });
+    }
+
+    async set_budget(budget) {
+        const db = await this.open_db();
+        const sql = `INSERT OR REPLACE INTO budgets (user_id, category, value, created_at) VALUES (?, ?, ?, ?)`;
+        await this.run(sql, [budget.user_id, budget.category, budget.value, budget.created_at]);
+        this.close_db();
     }
 }
